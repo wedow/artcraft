@@ -738,6 +738,7 @@ dependencies = [
 name = "artcraft_api_defs"
 version = "0.0.1"
 dependencies = [
+ "anyhow",
  "chrono",
  "enums",
  "enums_public",
