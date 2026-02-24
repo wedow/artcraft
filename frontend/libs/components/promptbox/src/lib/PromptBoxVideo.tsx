@@ -475,8 +475,8 @@ export const PromptBoxVideo = ({
           (option) => option.textLabel === aspectRatio,
         );
         if (selectedOption) {
-          request.seedance_aspect_ratio =
-            selectedOption.tauriValue as typeof request.seedance_aspect_ratio;
+          request.aspect_ratio =
+            selectedOption.tauriValue as typeof request.aspect_ratio;
         }
         break;
       }

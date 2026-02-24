@@ -139,33 +139,46 @@ export const VIDEO_MODELS: VideoModel[] = [
     requiresImage: false,
     sizeOptions: [
       {
-        tauriValue: "landscape_16x9",
+        tauriValue: "wide_sixteen_by_nine",
         textLabel: "16:9",
         icon: SizeIconOption.Landscape16x9,
       },
       {
-        tauriValue: "square_1x1",
+        tauriValue: "square",
         textLabel: "1:1",
         icon: SizeIconOption.Square,
       },
       {
-        tauriValue: "portrait_3x4",
+        tauriValue: "tall_three_by_four",
         textLabel: "3:4",
         icon: SizeIconOption.Portrait3x4,
       },
+      /*
+        /// 16:9 landscape (1280x720)
+  Landscape16x9,
+  /// 9:16 portrait (720x1280)
+  Portrait9x16,
+  /// 1:1 square (720x720)
+  Square1x1,
+  /// 4:3 standard (960x720)
+  Standard4x3,
+  /// 3:4 portrait (720x960)
+  Portrait3x4,
+      */
+     // WideFourByThree
       {
-        tauriValue: "standard_4x3",
+        tauriValue: "wide_four_by_three",
         textLabel: "4:3",
         icon: SizeIconOption.Standard4x3,
       },
       {
-        tauriValue: "portrait_9x16",
+        tauriValue: "portrait_nine_by_sixteen",
         textLabel: "9:16",
         icon: SizeIconOption.Portrait9x16,
       },
     ],
-    durationOptions: [4, 5, 6, 7, 8, 9],
-    defaultDuration: 4,
+    durationOptions: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+    defaultDuration: 5,
     supportsReferenceMode: true,
     maxReferenceImages: 3,
     resolutionOptions: ["480p", "720p"],

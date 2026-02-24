@@ -45,9 +45,10 @@ export interface EnqueueImageToVideoRequest {
   // Optional. Whether to generate audio alongside the video (used by some models like Veo2)
   generate_audio?: boolean;
 
-  // Optional. Aspect ratio for Seedance 2.0.
-  seedance_aspect_ratio?:
-    | "square_1x1"
+  // Optional. Common aspect ratio for other models. 
+  // Not all are supported by all models, but Artcraft will compensate.
+  aspect_ratio?:
+    | "square"
     | "portrait_3x4"
     | "standard_4x3"
     | "landscape_16x9"
