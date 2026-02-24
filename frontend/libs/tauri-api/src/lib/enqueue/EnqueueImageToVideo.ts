@@ -47,12 +47,7 @@ export interface EnqueueImageToVideoRequest {
 
   // Optional. Common aspect ratio for other models. 
   // Not all are supported by all models, but Artcraft will compensate.
-  aspect_ratio?:
-    | "square"
-    | "portrait_3x4"
-    | "standard_4x3"
-    | "landscape_16x9"
-    | "portrait_9x16";
+  aspect_ratio?: string; // TODO: Typesafety.
 
   // Optional. Duration in seconds.
   duration_seconds?: number;
@@ -72,12 +67,7 @@ interface RawEnqueueImageToVideoRequest {
   sora_orientation?: "portrait" | "landscape";
   grok_aspect_ratio?: "portrait" | "landscape" | "square";
   generate_audio?: boolean;
-  seedance_aspect_ratio?:
-    | "square_1x1"
-    | "portrait_3x4"
-    | "standard_4x3"
-    | "landscape_16x9"
-    | "portrait_9x16";
+  seedance_aspect_ratio?: string; // TODO: Typesafety.
   duration_seconds?: number;
   reference_image_media_tokens?: string[];
 }
@@ -138,8 +128,8 @@ export const EnqueueImageToVideo = async (
     mutableRequest.generate_audio = request.generate_audio;
   }
 
-  if (request.seedance_aspect_ratio) {
-    mutableRequest.seedance_aspect_ratio = request.seedance_aspect_ratio;
+  if (request.aspect_ratio) {
+    mutableRequest.aspect_ratio = request.aspect_ratio;
   }
 
   if (typeof request.duration_seconds === "number") {

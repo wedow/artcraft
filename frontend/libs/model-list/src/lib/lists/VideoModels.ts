@@ -153,26 +153,13 @@ export const VIDEO_MODELS: VideoModel[] = [
         textLabel: "3:4",
         icon: SizeIconOption.Portrait3x4,
       },
-      /*
-        /// 16:9 landscape (1280x720)
-  Landscape16x9,
-  /// 9:16 portrait (720x1280)
-  Portrait9x16,
-  /// 1:1 square (720x720)
-  Square1x1,
-  /// 4:3 standard (960x720)
-  Standard4x3,
-  /// 3:4 portrait (720x960)
-  Portrait3x4,
-      */
-     // WideFourByThree
       {
         tauriValue: "wide_four_by_three",
         textLabel: "4:3",
         icon: SizeIconOption.Standard4x3,
       },
       {
-        tauriValue: "portrait_nine_by_sixteen",
+        tauriValue: "tall_nine_by_sixteen",
         textLabel: "9:16",
         icon: SizeIconOption.Portrait9x16,
       },
