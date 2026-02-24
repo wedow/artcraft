@@ -67,7 +67,7 @@ interface RawEnqueueImageToVideoRequest {
   sora_orientation?: "portrait" | "landscape";
   grok_aspect_ratio?: "portrait" | "landscape" | "square";
   generate_audio?: boolean;
-  seedance_aspect_ratio?: string; // TODO: Typesafety.
+  aspect_ratio?: string; // TODO: Typesafety.
   duration_seconds?: number;
   reference_image_media_tokens?: string[];
 }
