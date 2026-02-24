@@ -10,6 +10,7 @@ pub struct GenerateVideoResponse {
   pub all_inference_job_tokens: Vec<InferenceJobToken>,
 }
 
+#[derive(Debug)]
 pub enum VideoGenerationPlan<'a> {
   ArtcraftSeedance2p0(PlanArtcraftSeedance2p0<'a>),
 }

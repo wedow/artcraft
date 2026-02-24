@@ -10,6 +10,7 @@ use artcraft_api_defs::generate::video::multi_function::seedance_2p0_multi_funct
 };
 use tokens::tokens::media_files::MediaFileToken;
 
+#[derive(Debug, Clone)]
 pub struct PlanArtcraftSeedance2p0<'a> {
   pub prompt: Option<&'a str>,
   pub start_frame: Option<&'a MediaFileToken>,

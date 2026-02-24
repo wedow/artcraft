@@ -681,6 +681,7 @@ version = "0.7.0"
 dependencies = [
  "anyhow",
  "artcraft_api_defs",
+ "artcraft_router",
  "base64 0.22.1",
  "build_metadata",
  "bytes",

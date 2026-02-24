@@ -33,7 +33,7 @@ pub struct Seedance2p0MultiFunctionVideoGenRequest {
   pub batch_count: Option<Seedance2p0BatchCount>,
 }
 
-#[derive(Copy, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum Seedance2p0AspectRatio {
   /// 16:9 landscape (1280x720)
@@ -48,7 +48,7 @@ pub enum Seedance2p0AspectRatio {
   Portrait3x4,
 }
 
-#[derive(Copy, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum Seedance2p0BatchCount {
   One,
