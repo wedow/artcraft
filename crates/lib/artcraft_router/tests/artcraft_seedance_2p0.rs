@@ -20,9 +20,10 @@ use storyteller_client::utils::api_host::ApiHost;
 fn get_artcraft_client() -> RouterClient {
   let cookies = std::fs::read_to_string("/Users/bt/Artcraft/credentials/artcraft_cookies.txt")
     .expect("Failed to read /Users/bt/Artcraft/credentials/artcraft_cookies.txt");
-  let credentials = StorytellerCredentialSet::initialize_with_just_cookie(
-    StorytellerSessionCookie::new(cookies.trim().to_string()),
-  );
+  let cookies = cookies.trim().to_string();
+  let credentials = StorytellerCredentialSet::parse_multi_cookie_header(&cookies)
+      .expect("Failed to parse cookies")
+      .expect("No credentials found");
   RouterClient::Artcraft(RouterArtcraftClient::new(ApiHost::Storyteller, credentials))
 }
 
