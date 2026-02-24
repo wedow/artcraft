@@ -36,7 +36,7 @@ pub(super) struct RawOrder {
 #[derive(Deserialize, Debug)]
 pub(super) struct RawVideoResult {
   pub url: String,
-  // pub width: u32,
-  // pub height: u32,
+  pub width: u32,
+  pub height: u32,
   // pub ratio: Option<f64>,
 }
