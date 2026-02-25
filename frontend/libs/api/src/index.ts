@@ -1,4 +1,5 @@
 export * from "./lib/enums/index.js";
+export * from "./lib/AdminApi.js";
 export * from "./lib/models/Users.js";
 export * from "./lib/AnalyticsApi.js";
 export * from "./lib/BillingApi.js";
